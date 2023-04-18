@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import com.smallworldfs.error.exception.ApplicationException;
 import com.smallworldfs.error.issue.DefaultIssueType;
 import com.smallworldfs.starter.httptest.exception.MockHttpException;
+import com.smallworldfs.transactionservice.transaction.client.TransactionDataServiceClient;
 import com.smallworldfs.transactionservice.transaction.entity.Transaction;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
