@@ -10,8 +10,8 @@ public class Transactions {
                 .sendingPrincipal(100.0)
                 .payoutPrincipal(98.0)
                 .fees(2.0)
-                .commission(1.8)
-                .agentCommission(0.2)
+                .commission(1.6)
+                .agentCommission(0.4)
                 .senderId(3)
                 .beneficiaryId(4)
                 .status(TransactionStatus.NEW).build();

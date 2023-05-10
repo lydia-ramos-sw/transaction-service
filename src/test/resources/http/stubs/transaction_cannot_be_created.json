@@ -1,0 +1,14 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/transactions/",
+    "bodyPatterns": [
+      {
+        "matchesJsonPath" : "$.[?(@.senderId == 9999)]}"
+      }
+    ]
+  },
+  "response": {
+    "status": 400
+  }
+}

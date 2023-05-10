@@ -15,10 +15,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class TransactionServiceTest {
+
     @Mock
     private TransactionDataServiceClient client;
 
@@ -27,6 +29,7 @@ public class TransactionServiceTest {
 
     @Nested
     class GetTransaction {
+
         @Test
         void throws_transaction_not_found_when_client_returns_404() {
             whenTransactionIsQueriedThenThrowNotFound(55);
@@ -47,14 +50,85 @@ public class TransactionServiceTest {
 
             assertThat(transaction).isEqualTo(newTransaction());
         }
+    }
 
-        private void whenTransactionIsQueriedThenReturn(int id, Transaction transaction) {
-            when(client.getTransaction(id)).thenReturn(transaction);
+    @Nested
+    class CreateTransaction {
+
+        @Test
+        void throws_transaction_cannot_be_created_when_client_returns_400() {
+            Transaction transaction = newTransaction();
+            whenTransactionIsCreatedThenThrowBadRequest(transaction);
+
+            ApplicationException exception = Assertions.assertThrows(
+                    ApplicationException.class, () -> service.createTransaction(transaction));
+
+            assertThat(exception)
+                    .hasMessage("Transaction could not be created")
+                    .returns(DefaultIssueType.REQUEST_ERROR, e -> e.getIssue().getType());
         }
 
-        private void whenTransactionIsQueriedThenThrowNotFound(int id) {
-            when(client.getTransaction(id)).thenThrow(MockHttpException.notFound());
+        @Test
+        void returns_transaction_data_when_transaction_is_created() {
+            Transaction transaction = newTransaction();
+            whenTransactionIsCreatedThenReturn(transaction);
+
+            Transaction transaction2 = service.createTransaction(transaction);
+
+            assertThat(transaction).isEqualTo(transaction2);
         }
+    }
+
+    @Nested
+    class PayoutTransaction {
+
+        @Test
+        void throws_transaction_not_found_when_transaction_to_pay_does_not_exist_returns_404() {
+            whenTransactionIsQueriedThenThrowNotFound(1);
+
+            ApplicationException exception = Assertions.assertThrows(
+                    ApplicationException.class, () -> service.payoutTransaction(1));
+
+            assertThat(exception)
+                    .hasMessage("Transaction with id '1' could not be found")
+                    .returns(DefaultIssueType.NOT_FOUND, e -> e.getIssue().getType());
+        }
+
+        @Test
+        void throws_cannot_be_paid_when_transaction_to_pay_cannot_be_paid_returns_400() {
+            whenTransactionIsQueriedThenReturn(1, newTransaction());
+            whenTransactionToPayIsNotFoundThrowNotFound(1);
+
+            ApplicationException exception = Assertions.assertThrows(
+                    ApplicationException.class, () -> service.payoutTransaction(1));
+
+            assertThat(exception)
+                    .hasMessage("Transaction with id '1' cannot be paid")
+                    .returns(DefaultIssueType.REQUEST_ERROR, e -> e.getIssue().getType());
+        }
+    }
+
+    private void whenTransactionIsQueriedThenReturn(int id, Transaction transaction) {
+        when(client.getTransaction(id)).thenReturn(transaction);
+    }
+
+    private void whenTransactionIsQueriedThenThrowNotFound(int id) {
+        when(client.getTransaction(id)).thenThrow(MockHttpException.notFound());
+    }
+
+    private void whenTransactionIsCreatedThenReturn(Transaction transaction) {
+        when(client.createTransaction(transaction)).thenReturn(transaction);
+    }
+
+    private void whenTransactionIsCreatedThenThrowBadRequest(Transaction transaction) {
+        when(client.createTransaction(transaction))
+                .thenThrow(MockHttpException.badRequest());
+    }
+
+    private void whenTransactionToPayIsNotFoundThrowNotFound(int id) {
+        Mockito.doThrow(MockHttpException.badRequest())
+                .when(client)
+                .payoutTransaction(id);
     }
 
 }

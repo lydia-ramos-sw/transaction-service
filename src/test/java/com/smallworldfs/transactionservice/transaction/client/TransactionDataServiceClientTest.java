@@ -33,4 +33,30 @@ class TransactionDataServiceClientTest {
         }
     }
 
+    @Nested
+    class CreateTransaction {
+
+        @Test
+        void throws_bad_request_when_server_returns_400() {
+            Transaction transaction = newTransaction();
+            transaction.setSenderId(9999);
+            assertThrows(HttpException.BadRequest.class, () -> client.createTransaction(transaction));
+        }
+
+        @Test
+        void returns_transaction_data_when_server_creates_transaction_data() {
+            Transaction transactionToCreate = newTransaction();
+            Transaction transaction = client.createTransaction(transactionToCreate);
+
+            assertThat(transaction).isEqualTo(transactionToCreate);
+        }
+    }
+
+    @Nested
+    class PayoutTransaction {
+        @Test
+        void throws_not_found_when_server_returns_404() {
+            assertThrows(HttpException.BadRequest.class, () -> client.payoutTransaction(99));
+        }
+    }
 }
