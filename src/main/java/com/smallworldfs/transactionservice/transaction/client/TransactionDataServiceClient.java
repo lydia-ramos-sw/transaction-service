@@ -1,5 +1,6 @@
 package com.smallworldfs.transactionservice.transaction.client;
 
+import com.smallworldfs.transactionservice.transaction.entity.CustomerTransactionInfo;
 import com.smallworldfs.transactionservice.transaction.entity.Transaction;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
@@ -19,4 +20,7 @@ public interface TransactionDataServiceClient {
 
     @PostMapping(value = "/transactions/{id}/payout")
     Transaction payoutTransaction(@PathVariable Integer id);
+
+    @PostMapping(value = "/{customerId}")
+    CustomerTransactionInfo getCustomerTransactionInfo(@PathVariable Integer customerId);
 }

@@ -4,7 +4,6 @@ import com.smallworldfs.transactionservice.transaction.client.TransactionDataSer
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 
 @SpringBootTest(properties = "transaction-data-service.url=http:/localhost:8080")
 class TransactionServiceApplicationTests {

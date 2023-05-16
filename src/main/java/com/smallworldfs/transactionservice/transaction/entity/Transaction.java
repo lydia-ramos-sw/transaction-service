@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Transaction {
+
     private Integer transactionId;
     private Double sendingPrincipal;
     private Double payoutPrincipal;

@@ -2,12 +2,13 @@ package com.smallworldfs.transactionservice.transaction.service;
 
 import static com.smallworldfs.transactionservice.transaction.error.TransactionIssue.TRANSACTION_CANNOT_BE_PAID;
 import static com.smallworldfs.transactionservice.transaction.error.TransactionIssue.TRANSACTION_COULD_NOT_BE_CREATED;
-import static com.smallworldfs.transactionservice.transaction.error.TransactionIssue.TRANSACTION_HAS_GOT_COMPLIANCE_ISSUES;
 import static com.smallworldfs.transactionservice.transaction.error.TransactionIssue.TRANSACTION_NOT_FOUND;
 
 import com.smallworldfs.starter.http.error.exception.HttpException;
 import com.smallworldfs.transactionservice.transaction.client.TransactionDataServiceClient;
+import com.smallworldfs.transactionservice.transaction.entity.CustomerTransactionInfo;
 import com.smallworldfs.transactionservice.transaction.entity.Transaction;
+import com.smallworldfs.transactionservice.transaction.entity.TransactionStatus;
 import com.smallworldfs.transactionservice.transaction.error.TransactionIssue;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -40,34 +41,43 @@ public class TransactionService {
 
     public void payoutTransaction(Integer id) {
         try {
-            client.payoutTransaction(getTransaction(id).getTransactionId());
+            Transaction transaction = getTransaction(id);
+            if (validateTransactionToBePaid(transaction)) {
+                client.payoutTransaction(transaction.getTransactionId());
+            }
+            throw TRANSACTION_CANNOT_BE_PAID.withParameters(id).asException();
         } catch (HttpException.BadRequest exception) {
             throw TRANSACTION_CANNOT_BE_PAID.withParameters(id).causedBy(exception).asException();
         }
     }
 
     public boolean validateTransactionToBeCreated(Transaction transaction) {
-        if (noParticipantHasMoreThan5TransactionsInProgress(transaction)
-                && senderHasNotSendMoreThan5000In30Days(transaction)
-                && otherConditionsIWillCodeLater(transaction)) {
+        CustomerTransactionInfo sender = client.getCustomerTransactionInfo(transaction.getSenderId());
+        CustomerTransactionInfo benef = client.getCustomerTransactionInfo(transaction.getBeneficiaryId());
+
+        if (noParticipantHasMoreThanFiveTransactionsInProgress(sender, benef)
+                && senderHasNotSendMoreThan5000In30Days(sender)
+                && otherConditionsWillCodeLater(transaction)) {
             return true;
         }
         return false;
     }
 
-    private boolean otherConditionsIWillCodeLater(Transaction transaction) {
-        return false;
+    private boolean otherConditionsWillCodeLater(Transaction transaction) {
+        return true;
     }
 
-    private boolean senderHasNotSendMoreThan5000In30Days(Transaction transaction) {
-        return false;
+    private boolean senderHasNotSendMoreThan5000In30Days(CustomerTransactionInfo sender) {
+        return sender.getAggregatedAmountSentInPeriod() < 5000;
     }
 
-    private boolean noParticipantHasMoreThan5TransactionsInProgress(Transaction transaction) {
-        return false;
+    private boolean noParticipantHasMoreThanFiveTransactionsInProgress(
+            CustomerTransactionInfo sender,
+            CustomerTransactionInfo benef) {
+        return sender.getNumberOfTxnInProgress() < 5 && benef.getNumberOfTxnInProgress() < 5;
     }
 
     public boolean validateTransactionToBePaid(Transaction transaction) {
-        return true;
+        return !transaction.getStatus().equals(TransactionStatus.PAID_OUT);
     }
 }

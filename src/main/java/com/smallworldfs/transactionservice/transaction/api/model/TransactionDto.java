@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TransactionDto {
+
     private Integer transactionId;
     private Double sendingPrincipal;
     private Double payoutPrincipal;

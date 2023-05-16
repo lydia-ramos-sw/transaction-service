@@ -2,11 +2,13 @@ package com.smallworldfs.transactionservice.transaction.service;
 
 import static com.smallworldfs.transactionservice.transaction.Transactions.newTransaction;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.smallworldfs.error.exception.ApplicationException;
 import com.smallworldfs.error.issue.DefaultIssueType;
 import com.smallworldfs.starter.httptest.exception.MockHttpException;
+import com.smallworldfs.transactionservice.transaction.CustomerTransactionsInfo;
 import com.smallworldfs.transactionservice.transaction.client.TransactionDataServiceClient;
 import com.smallworldfs.transactionservice.transaction.entity.Transaction;
 import org.junit.jupiter.api.Assertions;
@@ -58,6 +60,7 @@ public class TransactionServiceTest {
         @Test
         void throws_transaction_cannot_be_created_when_client_returns_400() {
             Transaction transaction = newTransaction();
+            whenGetCustomerTransactionInfo();
             whenTransactionIsCreatedThenThrowBadRequest(transaction);
 
             ApplicationException exception = Assertions.assertThrows(
@@ -71,6 +74,7 @@ public class TransactionServiceTest {
         @Test
         void returns_transaction_data_when_transaction_is_created() {
             Transaction transaction = newTransaction();
+            whenGetCustomerTransactionInfo();
             whenTransactionIsCreatedThenReturn(transaction);
 
             Transaction transaction2 = service.createTransaction(transaction);
@@ -123,6 +127,11 @@ public class TransactionServiceTest {
     private void whenTransactionIsCreatedThenThrowBadRequest(Transaction transaction) {
         when(client.createTransaction(transaction))
                 .thenThrow(MockHttpException.badRequest());
+    }
+
+    private void whenGetCustomerTransactionInfo() {
+        when(client.getCustomerTransactionInfo(any()))
+                .thenReturn(CustomerTransactionsInfo.newCustomerTransactionInfo());
     }
 
     private void whenTransactionToPayIsNotFoundThrowNotFound(int id) {

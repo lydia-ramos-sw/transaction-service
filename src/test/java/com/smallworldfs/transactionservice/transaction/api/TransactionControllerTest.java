@@ -172,13 +172,15 @@ public class TransactionControllerTest {
     private void whenTransactionToBePaidDoesNotExistThrowNotFoundException(int id) {
         Mockito.doThrow()
                 .doThrow(TRANSACTION_NOT_FOUND.withParameters(id).asException())
-                .when(service).payoutTransaction(id);
+                .when(service)
+                .payoutTransaction(id);
     }
 
     private void whenTransactionToBePaidCannotBePaidThrowRequestError(int id) {
         Mockito.doThrow()
                 .doThrow(TRANSACTION_CANNOT_BE_PAID.withParameters(id).asException())
-                .when(service).payoutTransaction(id);
+                .when(service)
+                .payoutTransaction(id);
     }
 
     private void whenTransactionToBePaidCanBePaid(int id) {

@@ -54,6 +54,7 @@ class TransactionDataServiceClientTest {
 
     @Nested
     class PayoutTransaction {
+
         @Test
         void throws_not_found_when_server_returns_404() {
             assertThrows(HttpException.BadRequest.class, () -> client.payoutTransaction(99));
